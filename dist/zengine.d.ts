@@ -1,11 +1,40 @@
 declare namespace ZEngine {
+}
+declare namespace ZEngine {
+    class Entity3D extends Entity {
+        transform: THREE.Object3D;
+        position: THREE.Vector3;
+        rotation: THREE.Quaternion;
+        protected prestart(): void;
+    }
+}
+declare namespace ZEngine {
     class Entity implements Lib.LinkedList.IItem {
         scene: Scene;
         __llReferences: {
             [id: number]: Lib.LinkedList.InternalItem<any>;
         };
+        protected __removed: boolean;
         constructor(scene: Scene);
+        /**
+         * Adds component to this entity.
+         */
+        protected addComponent<T extends Comps.Component>(cmp: {
+            new (...args: any[]): T;
+        }, options?: any): T;
+        protected prestart(): void;
+        /**
+         * Called when entity is inicialized.
+         */
         protected start(scene: Scene): void;
+        /**
+         * Removes entity from scene.
+         */
+        remove(): void;
+        /**
+         * Called when entity is removed from scene.
+         */
+        onRemove(): void;
         tick(delta: number): void;
     }
 }
@@ -26,7 +55,6 @@ declare namespace ZEngine {
 }
 declare namespace ZEngine {
     class Game {
-        entities: Lib.LinkedList<Entity>;
         scene: Scene;
         renderer: Renderer;
         time: Time;
@@ -35,6 +63,13 @@ declare namespace ZEngine {
         targetFps: number;
         protected interval: number;
         constructor();
+        /**
+         * Called when engine is inicialized.
+         */
+        protected start(): void;
+        loadScene<T extends Scene>(scene: {
+            new (...args: any[]): T;
+        }): Scene;
         /**
          * Creates new instance of specified entity.
          */
@@ -76,8 +111,41 @@ declare namespace ZEngine {
 }
 declare namespace ZEngine {
     class Scene {
+        game: Game;
+        entities: Lib.LinkedList<Entity>;
         scene: THREE.Scene;
         camera: THREE.Camera;
+        constructor(game: Game);
+        /**
+         * Called when scene is ready.
+         */
+        protected start(): void;
+        /**
+         * Builds main camera used for this scene.
+         */
+        protected createCamera(): THREE.Camera;
+        /**
+         * Builds main camera used for this scene.
+         */
+        protected createScene(): THREE.Scene;
+        /**
+         * Creates new instance of specified entity.
+         */
+        create<T extends Entity>(base: {
+            new (...args: any[]): T;
+        }): T;
+        /**
+         * Finally removes entity from scene
+         */
+        remove(entity: Entity): void;
+        /**
+         * Calls tick for every entity.
+         */
+        update(delta: number): void;
+        /**
+         * Renders current scene.
+         */
+        render(delta: number): void;
     }
 }
 declare namespace ZEngine {
@@ -101,6 +169,152 @@ declare namespace ZEngine {
         sleep: number;
         lastframetime: number;
     }
+}
+declare namespace ZEngine.Comps {
+    class Component {
+        entity: Entity;
+        static name: string;
+        constructor(entity: Entity, options?: any);
+        protected start(options?: any): void;
+        tick(delta: number): void;
+    }
+}
+declare namespace ZEngine.Comps {
+    class Input extends Component {
+        static name: string;
+        protected mouseButtons: {
+            [code: number]: boolean;
+        };
+        protected mousePress: {
+            [code: number]: boolean;
+        };
+        protected keys: {
+            [code: number]: boolean;
+        };
+        protected press: {
+            [code: number]: boolean;
+        };
+        mouse: {
+            x: number;
+            y: number;
+        };
+        protected start(): void;
+        protected onMouseMove(event: MouseEvent): void;
+        protected onMouseDown(e: MouseEvent): void;
+        protected onMouseUp(e: MouseEvent): void;
+        protected onKeyDown(e: KeyboardEvent): void;
+        protected onKeyUp(e: KeyboardEvent): void;
+        keyPressed(code: number): boolean;
+        keyDown(code: number): boolean;
+        keyUp(code: number): boolean;
+        mouseDown(code: number): boolean;
+        mousePressed(code: number): boolean;
+        tick(delta: number): void;
+    }
+}
+declare namespace ZEngine {
+    let Keys: {
+        0: number;
+        1: number;
+        2: number;
+        3: number;
+        4: number;
+        5: number;
+        6: number;
+        7: number;
+        8: number;
+        9: number;
+        Backspace: number;
+        Tab: number;
+        Enter: number;
+        Shift: number;
+        Ctrl: number;
+        Alt: number;
+        Break: number;
+        CapsLock: number;
+        Escape: number;
+        Space: number;
+        PageUp: number;
+        PageDown: number;
+        End: number;
+        Home: number;
+        Left: number;
+        Up: number;
+        Right: number;
+        Down: number;
+        Insert: number;
+        Delete: number;
+        A: number;
+        B: number;
+        C: number;
+        D: number;
+        E: number;
+        F: number;
+        G: number;
+        H: number;
+        I: number;
+        J: number;
+        K: number;
+        L: number;
+        M: number;
+        N: number;
+        O: number;
+        P: number;
+        Q: number;
+        R: number;
+        S: number;
+        T: number;
+        U: number;
+        V: number;
+        W: number;
+        X: number;
+        Y: number;
+        Z: number;
+        LeftWindows: number;
+        RightWindows: number;
+        Select: number;
+        Num0: number;
+        Num1: number;
+        Num2: number;
+        Num3: number;
+        Num4: number;
+        Num5: number;
+        Num6: number;
+        Num7: number;
+        Num8: number;
+        Num9: number;
+        NumMultiply: number;
+        NumPlus: number;
+        NumSubstract: number;
+        NumDecimal: number;
+        NumDivide: number;
+        F1: number;
+        F2: number;
+        F3: number;
+        F4: number;
+        F5: number;
+        F6: number;
+        F7: number;
+        F8: number;
+        F9: number;
+        F10: number;
+        F11: number;
+        F12: number;
+        NumLock: number;
+        ScrollLock: number;
+        SemiColon: number;
+        EqualSign: number;
+        Comma: number;
+        Dash: number;
+        Period: number;
+        FowardSlash: number;
+        Grave: number;
+    };
+    let MouseButtons: {
+        Left: number;
+        Right: number;
+        Middle: number;
+    };
 }
 declare namespace ZEngine.Lib {
     class LinkedList<T extends LinkedList.IItem> {
@@ -134,18 +348,18 @@ declare namespace ZEngine.Lib {
          * @param var    obj   content to be inserted
          * @return object list item
          */
-        insert(after: any, obj: any): {
+        insert(after: T, obj: T): {
             previous: any;
             next: any;
-            content: any;
+            content: T;
         };
         /**
          * Removes specified item from list
          *
-         * @param object item (not content!)
+         * @param object
          * @return boolean true if item was removed, false if not
          */
-        remove(obj: any): boolean;
+        remove(obj: T): boolean;
         /**
          * Checks if this list contains specified item.
          */

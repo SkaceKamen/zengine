@@ -9,8 +9,6 @@ namespace ZEngine {
 	};
 	
 	export class Game {
-		public entities = new Lib.LinkedList<Entity>();
-
 		public scene: Scene;
 		public renderer: Renderer;
 
@@ -29,15 +27,30 @@ namespace ZEngine {
 			this.renderer = new Renderer(this);
 
 			this.initTicker();
+			this.start();
+		}
+
+		/**
+		 * Called when engine is inicialized.
+		 */
+		protected start() {
+			this.tick(0);
+		}
+
+		public loadScene<T extends Scene>(scene: { new(...args: any[]): T }) {
+			this.scene = new scene(this);
+			
+			// For debuggers
+			window['scene'] = this.scene.scene;
+
+			return this.scene;
 		}
 
 		/**
 		 * Creates new instance of specified entity.
 		 */
 		public create<T extends Entity>(base: { new(...args: any[]): T }) {
-			var instance = new base(this.scene);
-			this.entities.push(instance);
-			return instance;
+			return this.scene.create(base);
 		}
 
 		/**
@@ -86,26 +99,21 @@ namespace ZEngine {
 			this.render(this.time.delta);
 
 			// Schedule the next update
-			this.interval = window.requestAnimationFrame(() => this.tick);
+			this.interval = window.requestAnimationFrame(this.tick.bind(this));
 		}
 
 		/**
 		 * Calls tick for every entity.
 		 */
 		protected update(delta: number) {
-			var item;
-
-			this.entities.iter.reset();
-			while(item = this.entities.iter.next()) {
-				item.tick(delta);
-			}
+			this.scene.update(delta);
 		}
 
 		/**
 		 * Renders current scene.
 		 */
 		protected render(delta: number) {
-			this.renderer.render(this.scene);
+			this.scene.render(delta);
 		}
 	}
 }

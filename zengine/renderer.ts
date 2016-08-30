@@ -6,6 +6,8 @@ namespace ZEngine {
 			this.renderer = new THREE.WebGLRenderer();
 			this.renderer.setSize(game.screen.width, game.screen.height);
 
+			document.getElementsByTagName("body")[0].appendChild(this.renderer.domElement);
+
 			this.game.screen.onResize.then((size) => this.onResize(size))
 		}
 

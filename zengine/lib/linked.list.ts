@@ -74,12 +74,14 @@ namespace ZEngine.Lib {
 		 * @param var    obj   content to be inserted
 		 * @return object list item
 		 */
-		public insert(after, obj) {	
+		public insert(after: T, obj: T) {	
 			var item = {
 				previous: null,
 				next: null,
 				content: obj
 			};
+
+			let af: LinkedList.InternalItem<T> = null;
 			
 			if (!obj.__llReferences)
 				obj.__llReferences = {};
@@ -89,11 +91,11 @@ namespace ZEngine.Lib {
 			if (after) {
 				if (!after.__llReferences)
 					after.__llReferences = {};
-				after = after.__llReferences[this.id];
+				af = after.__llReferences[this.id];
 			}
 			
-			item.previous = after;
-			item.next = after != null ? after.next : null;
+			item.previous = af;
+			item.next = af != null ? af.next : null;
 			
 			this.length++;
 			
@@ -109,15 +111,15 @@ namespace ZEngine.Lib {
 			}
 			
 			//Update back reference
-			if (after.next != null) {
-				after.next.previous = item;
+			if (af.next != null) {
+				af.next.previous = item;
 			}
 			
 			//Update next reference
-			after.next = item;
+			af.next = item;
 			
 			//Update ending reference
-			if (after == this.end) {
+			if (af == this.end) {
 				this.end = item;
 			}
 				
@@ -127,10 +129,10 @@ namespace ZEngine.Lib {
 		/**
 		 * Removes specified item from list
 		 *
-		 * @param object item (not content!)
+		 * @param object
 		 * @return boolean true if item was removed, false if not
 		 */
-		public remove(obj) {
+		public remove(obj: T) {
 			var item = obj.__llReferences ? obj.__llReferences[this.id] : null;
 			
 			if (item === undefined || item == null)
