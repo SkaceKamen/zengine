@@ -1,0 +1,32 @@
+{
+  "name": "zengine",
+  "version": "1.0.0",
+  "description": "Game engine for THREE.JS",
+  "scripts": {
+    "postinstall": "typings install",
+    "tsc": "tsc",
+    "tsc:w": "tsc -w",
+    "typings": "typings"
+  },
+  "author": "Jan Zípek <jan@zipek.cz> (http://zipek.cz)",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^1.8.10",
+    "typings": "^1.0.4"
+  },
+  "main": "dist/zengine.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/SkaceKamen/zengine.git"
+  },
+  "keywords": [
+    "game-engine",
+    "threejs",
+    "3d"
+  ],
+  "bugs": {
+    "url": "https://github.com/SkaceKamen/zengine/issues"
+  },
+  "homepage": "https://github.com/SkaceKamen/zengine#readme"
+}

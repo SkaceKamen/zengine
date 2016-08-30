@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+       "target": "es5",
+        "module": "system",
+		"watch": false,
+        "sourceMap": true,
+        "outFile": "./dist/zengine.js",
+        "rootDir": "zengine/",
+        "declaration": true
+    },
+    "exclude": [
+        "dist",
+        "node_modules"
+    ]
+}
