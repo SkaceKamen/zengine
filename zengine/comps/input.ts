@@ -23,6 +23,8 @@ namespace ZEngine.Comps {
 			window.addEventListener('mousedown', (e) => this.onMouseDown(e));
 			window.addEventListener('mousemove', (e) => this.onMouseMove(e));
 			window.addEventListener('mouseup', (e) => this.onMouseUp(e));
+
+			window.addEventListener('contextmenu', (e) => { e.stopPropagation(); e.preventDefault(); });
 		}
 
 		protected onMouseMove(event: MouseEvent) {

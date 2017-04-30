@@ -6,7 +6,7 @@ namespace ZEngine {
 
 		constructor(public scene: Scene) {
 			this.prestart();
-			this.start(scene);
+			this.start();
 		}
 
 		/**
@@ -23,7 +23,7 @@ namespace ZEngine {
 		/**
 		 * Called when entity is inicialized.
 		 */
-		protected start(scene: Scene) {
+		protected start() {
 
 		}
 

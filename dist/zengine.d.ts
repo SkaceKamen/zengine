@@ -1,12 +1,46 @@
-declare namespace ZEngine {
+declare namespace ZEngine.Comps {
+    class Component {
+        entity: Entity;
+        static name: string;
+        constructor(entity: Entity, options?: any);
+        protected start(options?: any): void;
+        tick(delta: number): void;
+    }
+}
+declare namespace ZEngine.Comps {
+    class Input extends Component {
+        static name: string;
+        protected mouseButtons: {
+            [code: number]: boolean;
+        };
+        protected mousePress: {
+            [code: number]: boolean;
+        };
+        protected keys: {
+            [code: number]: boolean;
+        };
+        protected press: {
+            [code: number]: boolean;
+        };
+        mouse: {
+            x: number;
+            y: number;
+        };
+        protected start(): void;
+        protected onMouseMove(event: MouseEvent): void;
+        protected onMouseDown(e: MouseEvent): void;
+        protected onMouseUp(e: MouseEvent): void;
+        protected onKeyDown(e: KeyboardEvent): void;
+        protected onKeyUp(e: KeyboardEvent): void;
+        keyPressed(code: number): boolean;
+        keyDown(code: number): boolean;
+        keyUp(code: number): boolean;
+        mouseDown(code: number): boolean;
+        mousePressed(code: number): boolean;
+        tick(delta: number): void;
+    }
 }
 declare namespace ZEngine {
-    class Entity3D extends Entity {
-        transform: THREE.Object3D;
-        position: THREE.Vector3;
-        rotation: THREE.Quaternion;
-        protected prestart(): void;
-    }
 }
 declare namespace ZEngine {
     class Entity implements Lib.LinkedList.IItem {
@@ -26,7 +60,7 @@ declare namespace ZEngine {
         /**
          * Called when entity is inicialized.
          */
-        protected start(scene: Scene): void;
+        protected start(): void;
         /**
          * Removes entity from scene.
          */
@@ -36,6 +70,18 @@ declare namespace ZEngine {
          */
         onRemove(): void;
         tick(delta: number): void;
+    }
+}
+declare namespace ZEngine {
+    class Entity3D extends Entity {
+        transform: THREE.Object3D;
+        position: THREE.Vector3;
+        rotation: THREE.Quaternion;
+        protected prestart(): void;
+        /**
+         * Removes entity from scene.
+         */
+        remove(): void;
     }
 }
 declare namespace ZEngine {
@@ -90,126 +136,6 @@ declare namespace ZEngine {
          * Renders current scene.
          */
         protected render(delta: number): void;
-    }
-}
-declare namespace ZEngine {
-    class Mouse {
-        x: number;
-        y: number;
-        elementX: number;
-        elementY: number;
-    }
-}
-declare namespace ZEngine {
-    class Renderer {
-        game: Game;
-        protected renderer: THREE.WebGLRenderer;
-        constructor(game: Game);
-        protected onResize(size: ScreenSize): void;
-        render(scene: Scene): void;
-    }
-}
-declare namespace ZEngine {
-    class Scene {
-        game: Game;
-        entities: Lib.LinkedList<Entity>;
-        scene: THREE.Scene;
-        camera: THREE.Camera;
-        constructor(game: Game);
-        /**
-         * Called when scene is ready.
-         */
-        protected start(): void;
-        /**
-         * Builds main camera used for this scene.
-         */
-        protected createCamera(): THREE.Camera;
-        /**
-         * Builds main camera used for this scene.
-         */
-        protected createScene(): THREE.Scene;
-        /**
-         * Creates new instance of specified entity.
-         */
-        create<T extends Entity>(base: {
-            new (...args: any[]): T;
-        }): T;
-        /**
-         * Finally removes entity from scene
-         */
-        remove(entity: Entity): void;
-        /**
-         * Calls tick for every entity.
-         */
-        update(delta: number): void;
-        /**
-         * Renders current scene.
-         */
-        render(delta: number): void;
-    }
-}
-declare namespace ZEngine {
-    interface ScreenSize {
-        width: number;
-        height: number;
-    }
-    class Screen {
-        game: Game;
-        width: number;
-        height: number;
-        onResize: Eventor<ScreenSize>;
-        constructor(game: Game);
-        protected resized(): void;
-        viewport(): ScreenSize;
-    }
-}
-declare namespace ZEngine {
-    class Time {
-        delta: number;
-        sleep: number;
-        lastframetime: number;
-    }
-}
-declare namespace ZEngine.Comps {
-    class Component {
-        entity: Entity;
-        static name: string;
-        constructor(entity: Entity, options?: any);
-        protected start(options?: any): void;
-        tick(delta: number): void;
-    }
-}
-declare namespace ZEngine.Comps {
-    class Input extends Component {
-        static name: string;
-        protected mouseButtons: {
-            [code: number]: boolean;
-        };
-        protected mousePress: {
-            [code: number]: boolean;
-        };
-        protected keys: {
-            [code: number]: boolean;
-        };
-        protected press: {
-            [code: number]: boolean;
-        };
-        mouse: {
-            x: number;
-            y: number;
-        };
-        protected start(): void;
-        protected onMouseMove(event: MouseEvent): void;
-        protected onMouseDown(e: MouseEvent): void;
-        protected onMouseUp(e: MouseEvent): void;
-        protected onKeyDown(e: KeyboardEvent): void;
-        protected onKeyUp(e: KeyboardEvent): void;
-        keyPressed(code: number): boolean;
-        keyDown(code: number): boolean;
-        keyUp(code: number): boolean;
-        mouseDown(code: number): boolean;
-        mousePressed(code: number): boolean;
-        tick(delta: number): void;
     }
 }
 declare namespace ZEngine {
@@ -401,5 +327,83 @@ declare namespace ZEngine.Lib {
             peek(): T;
             next(): T;
         }
+    }
+}
+declare namespace ZEngine {
+    class Mouse {
+        x: number;
+        y: number;
+        elementX: number;
+        elementY: number;
+    }
+}
+declare namespace ZEngine {
+    class Renderer {
+        game: Game;
+        protected renderer: THREE.WebGLRenderer;
+        constructor(game: Game);
+        protected onResize(size: ScreenSize): void;
+        render(scene: Scene): void;
+    }
+}
+declare namespace ZEngine {
+    class Scene {
+        game: Game;
+        entities: Lib.LinkedList<Entity>;
+        scene: THREE.Scene;
+        camera: THREE.Camera;
+        constructor(game: Game);
+        /**
+         * Called when scene is ready.
+         */
+        protected start(): void;
+        /**
+         * Builds main camera used for this scene.
+         */
+        protected createCamera(): THREE.Camera;
+        /**
+         * Builds main camera used for this scene.
+         */
+        protected createScene(): THREE.Scene;
+        /**
+         * Creates new instance of specified entity.
+         */
+        create<T extends Entity>(base: {
+            new (...args: any[]): T;
+        }): T;
+        /**
+         * Finally removes entity from scene
+         */
+        remove(entity: Entity): void;
+        /**
+         * Calls tick for every entity.
+         */
+        update(delta: number): void;
+        /**
+         * Renders current scene.
+         */
+        render(delta: number): void;
+    }
+}
+declare namespace ZEngine {
+    interface ScreenSize {
+        width: number;
+        height: number;
+    }
+    class Screen {
+        game: Game;
+        width: number;
+        height: number;
+        onResize: Eventor<ScreenSize>;
+        constructor(game: Game);
+        protected resized(): void;
+        viewport(): ScreenSize;
+    }
+}
+declare namespace ZEngine {
+    class Time {
+        delta: number;
+        sleep: number;
+        lastframetime: number;
     }
 }

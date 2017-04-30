@@ -5,21 +5,101 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 var ZEngine;
 (function (ZEngine) {
-    var Entity3D = (function (_super) {
-        __extends(Entity3D, _super);
-        function Entity3D() {
-            _super.apply(this, arguments);
-        }
-        Entity3D.prototype.prestart = function () {
-            this.transform = new THREE.Object3D();
-            this.transform.name = "Entity";
-            this.position = this.transform.position;
-            this.rotation = this.transform.quaternion;
-            this.scene.scene.add(this.transform);
-        };
-        return Entity3D;
-    }(ZEngine.Entity));
-    ZEngine.Entity3D = Entity3D;
+    var Comps;
+    (function (Comps) {
+        var Component = (function () {
+            function Component(entity, options) {
+                this.entity = entity;
+                this.start(options);
+            }
+            Component.prototype.start = function (options) {
+            };
+            Component.prototype.tick = function (delta) {
+            };
+            return Component;
+        }());
+        Component.name = "component";
+        Comps.Component = Component;
+    })(Comps = ZEngine.Comps || (ZEngine.Comps = {}));
+})(ZEngine || (ZEngine = {}));
+var ZEngine;
+(function (ZEngine) {
+    var Comps;
+    (function (Comps) {
+        var Input = (function (_super) {
+            __extends(Input, _super);
+            function Input() {
+                var _this = _super !== null && _super.apply(this, arguments) || this;
+                _this.mouseButtons = {};
+                _this.mousePress = {};
+                _this.keys = {};
+                _this.press = {};
+                _this.mouse = {
+                    x: 0,
+                    y: 0
+                };
+                return _this;
+            }
+            Input.prototype.start = function () {
+                var _this = this;
+                window.addEventListener('keydown', function (e) { return _this.onKeyDown(e); });
+                window.addEventListener('keyup', function (e) { return _this.onKeyUp(e); });
+                window.addEventListener('mousedown', function (e) { return _this.onMouseDown(e); });
+                window.addEventListener('mousemove', function (e) { return _this.onMouseMove(e); });
+                window.addEventListener('mouseup', function (e) { return _this.onMouseUp(e); });
+                window.addEventListener('contextmenu', function (e) { e.stopPropagation(); e.preventDefault(); });
+            };
+            Input.prototype.onMouseMove = function (event) {
+                var mouseX, mouseY;
+                if (event.clientX) {
+                    mouseX = event.clientX;
+                    mouseY = event.clientY;
+                }
+                else if (event.layerX) {
+                    mouseX = event.layerX;
+                    mouseY = event.layerY;
+                }
+                this.mouse.x = mouseX;
+                this.mouse.y = mouseY;
+            };
+            Input.prototype.onMouseDown = function (e) {
+                this.mouseButtons[e.button] = true;
+                this.mousePress[e.button] = true;
+            };
+            Input.prototype.onMouseUp = function (e) {
+                this.mouseButtons[e.button] = false;
+            };
+            Input.prototype.onKeyDown = function (e) {
+                this.keys[e.keyCode] = true;
+                this.press[e.keyCode] = true;
+            };
+            Input.prototype.onKeyUp = function (e) {
+                this.keys[e.keyCode] = false;
+            };
+            Input.prototype.keyPressed = function (code) {
+                return !!this.press[code];
+            };
+            Input.prototype.keyDown = function (code) {
+                return !!this.keys[code];
+            };
+            Input.prototype.keyUp = function (code) {
+                return !!!this.keys[code];
+            };
+            Input.prototype.mouseDown = function (code) {
+                return !!this.mouseButtons[code];
+            };
+            Input.prototype.mousePressed = function (code) {
+                return !!this.mousePress[code];
+            };
+            Input.prototype.tick = function (delta) {
+                this.press = {};
+                this.mousePress = {};
+            };
+            return Input;
+        }(Comps.Component));
+        Input.name = "input";
+        Comps.Input = Input;
+    })(Comps = ZEngine.Comps || (ZEngine.Comps = {}));
 })(ZEngine || (ZEngine = {}));
 var ZEngine;
 (function (ZEngine) {
@@ -28,7 +108,7 @@ var ZEngine;
             this.scene = scene;
             this.__removed = false;
             this.prestart();
-            this.start(scene);
+            this.start();
         }
         /**
          * Adds component to this entity.
@@ -41,7 +121,7 @@ var ZEngine;
         /**
          * Called when entity is inicialized.
          */
-        Entity.prototype.start = function (scene) {
+        Entity.prototype.start = function () {
         };
         /**
          * Removes entity from scene.
@@ -59,6 +139,33 @@ var ZEngine;
         return Entity;
     }());
     ZEngine.Entity = Entity;
+})(ZEngine || (ZEngine = {}));
+/// <reference path="./entity.ts" />
+var ZEngine;
+/// <reference path="./entity.ts" />
+(function (ZEngine) {
+    var Entity3D = (function (_super) {
+        __extends(Entity3D, _super);
+        function Entity3D() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        Entity3D.prototype.prestart = function () {
+            this.transform = new THREE.Object3D();
+            this.transform.name = "Entity";
+            this.position = this.transform.position;
+            this.rotation = this.transform.quaternion;
+            this.scene.scene.add(this.transform);
+        };
+        /**
+         * Removes entity from scene.
+         */
+        Entity3D.prototype.remove = function () {
+            _super.prototype.remove.call(this);
+            this.scene.scene.remove(this.transform);
+        };
+        return Entity3D;
+    }(ZEngine.Entity));
+    ZEngine.Entity3D = Entity3D;
 })(ZEngine || (ZEngine = {}));
 var ZEngine;
 (function (ZEngine) {
@@ -191,244 +298,6 @@ var ZEngine;
         return Game;
     }());
     ZEngine.Game = Game;
-})(ZEngine || (ZEngine = {}));
-var ZEngine;
-(function (ZEngine) {
-    var Mouse = (function () {
-        function Mouse() {
-        }
-        return Mouse;
-    }());
-    ZEngine.Mouse = Mouse;
-})(ZEngine || (ZEngine = {}));
-var ZEngine;
-(function (ZEngine) {
-    var Renderer = (function () {
-        function Renderer(game) {
-            var _this = this;
-            this.game = game;
-            this.renderer = new THREE.WebGLRenderer();
-            this.renderer.setSize(game.screen.width, game.screen.height);
-            document.getElementsByTagName("body")[0].appendChild(this.renderer.domElement);
-            this.game.screen.onResize.then(function (size) { return _this.onResize(size); });
-        }
-        Renderer.prototype.onResize = function (size) {
-            this.renderer.setSize(size.width, size.height);
-            if (this.game.scene.camera instanceof THREE.PerspectiveCamera) {
-                this.game.scene.camera.aspect = size.width / size.height;
-                this.game.scene.camera.updateProjectionMatrix();
-            }
-        };
-        Renderer.prototype.render = function (scene) {
-            this.renderer.render(scene.scene, scene.camera);
-        };
-        return Renderer;
-    }());
-    ZEngine.Renderer = Renderer;
-})(ZEngine || (ZEngine = {}));
-var ZEngine;
-(function (ZEngine) {
-    var Scene = (function () {
-        function Scene(game) {
-            this.game = game;
-            this.entities = new ZEngine.Lib.LinkedList();
-            this.camera = this.createCamera();
-            this.scene = this.createScene();
-            this.scene.name = "Scene";
-            this.camera.name = "Main camera";
-            this.start();
-        }
-        /**
-         * Called when scene is ready.
-         */
-        Scene.prototype.start = function () {
-        };
-        /**
-         * Builds main camera used for this scene.
-         */
-        Scene.prototype.createCamera = function () {
-            return new THREE.PerspectiveCamera(70, this.game.screen.width / this.game.screen.height, 0.1, 1E5);
-        };
-        /**
-         * Builds main camera used for this scene.
-         */
-        Scene.prototype.createScene = function () {
-            return new THREE.Scene();
-        };
-        /**
-         * Creates new instance of specified entity.
-         */
-        Scene.prototype.create = function (base) {
-            var instance = new base(this);
-            this.entities.push(instance);
-            return instance;
-        };
-        /**
-         * Finally removes entity from scene
-         */
-        Scene.prototype.remove = function (entity) {
-            entity.onRemove();
-            entity.__removed = true;
-            entity.scene = null;
-            this.entities.remove(entity);
-        };
-        /**
-         * Calls tick for every entity.
-         */
-        Scene.prototype.update = function (delta) {
-            var item;
-            this.entities.iter.reset();
-            while (item = this.entities.iter.next()) {
-                item.tick(delta);
-            }
-        };
-        /**
-         * Renders current scene.
-         */
-        Scene.prototype.render = function (delta) {
-            this.game.renderer.render(this);
-        };
-        return Scene;
-    }());
-    ZEngine.Scene = Scene;
-})(ZEngine || (ZEngine = {}));
-var ZEngine;
-(function (ZEngine) {
-    var Screen = (function () {
-        function Screen(game) {
-            var _this = this;
-            this.game = game;
-            this.onResize = new ZEngine.Eventor();
-            var size = this.viewport();
-            this.width = size.width;
-            this.height = size.height;
-            window.addEventListener('resize', function () { return _this.resized(); }, false);
-        }
-        Screen.prototype.resized = function () {
-            var size = this.viewport();
-            this.width = size.width;
-            this.height = size.height;
-            this.onResize.trigger(size);
-        };
-        Screen.prototype.viewport = function () {
-            var e = window, a = 'inner';
-            if (!('innerWidth' in window)) {
-                a = 'client';
-                e = document.documentElement || document.body;
-            }
-            return {
-                width: e[a + 'Width'],
-                height: e[a + 'Height']
-            };
-        };
-        return Screen;
-    }());
-    ZEngine.Screen = Screen;
-})(ZEngine || (ZEngine = {}));
-var ZEngine;
-(function (ZEngine) {
-    var Time = (function () {
-        function Time() {
-        }
-        return Time;
-    }());
-    ZEngine.Time = Time;
-})(ZEngine || (ZEngine = {}));
-var ZEngine;
-(function (ZEngine) {
-    var Comps;
-    (function (Comps) {
-        var Component = (function () {
-            function Component(entity, options) {
-                this.entity = entity;
-                this.start(options);
-            }
-            Component.prototype.start = function (options) {
-            };
-            Component.prototype.tick = function (delta) {
-            };
-            Component.name = "component";
-            return Component;
-        }());
-        Comps.Component = Component;
-    })(Comps = ZEngine.Comps || (ZEngine.Comps = {}));
-})(ZEngine || (ZEngine = {}));
-var ZEngine;
-(function (ZEngine) {
-    var Comps;
-    (function (Comps) {
-        var Input = (function (_super) {
-            __extends(Input, _super);
-            function Input() {
-                _super.apply(this, arguments);
-                this.mouseButtons = {};
-                this.mousePress = {};
-                this.keys = {};
-                this.press = {};
-                this.mouse = {
-                    x: 0,
-                    y: 0
-                };
-            }
-            Input.prototype.start = function () {
-                var _this = this;
-                window.addEventListener('keydown', function (e) { return _this.onKeyDown(e); });
-                window.addEventListener('keyup', function (e) { return _this.onKeyUp(e); });
-                window.addEventListener('mousedown', function (e) { return _this.onMouseDown(e); });
-                window.addEventListener('mousemove', function (e) { return _this.onMouseMove(e); });
-                window.addEventListener('mouseup', function (e) { return _this.onMouseUp(e); });
-            };
-            Input.prototype.onMouseMove = function (event) {
-                var mouseX, mouseY;
-                if (event.clientX) {
-                    mouseX = event.clientX;
-                    mouseY = event.clientY;
-                }
-                else if (event.layerX) {
-                    mouseX = event.layerX;
-                    mouseY = event.layerY;
-                }
-                this.mouse.x = mouseX;
-                this.mouse.y = mouseY;
-            };
-            Input.prototype.onMouseDown = function (e) {
-                this.mouseButtons[e.button] = true;
-                this.mousePress[e.button] = true;
-            };
-            Input.prototype.onMouseUp = function (e) {
-                this.mouseButtons[e.button] = false;
-            };
-            Input.prototype.onKeyDown = function (e) {
-                this.keys[e.keyCode] = true;
-                this.press[e.keyCode] = true;
-            };
-            Input.prototype.onKeyUp = function (e) {
-                this.keys[e.keyCode] = false;
-            };
-            Input.prototype.keyPressed = function (code) {
-                return !!this.press[code];
-            };
-            Input.prototype.keyDown = function (code) {
-                return !!this.keys[code];
-            };
-            Input.prototype.keyUp = function (code) {
-                return !!!this.keys[code];
-            };
-            Input.prototype.mouseDown = function (code) {
-                return !!this.mouseButtons[code];
-            };
-            Input.prototype.mousePressed = function (code) {
-                return !!this.mousePress[code];
-            };
-            Input.prototype.tick = function (delta) {
-                this.press = {};
-                this.mousePress = {};
-            };
-            Input.name = "input";
-            return Input;
-        }(Comps.Component));
-        Comps.Input = Input;
-    })(Comps = ZEngine.Comps || (ZEngine.Comps = {}));
 })(ZEngine || (ZEngine = {}));
 var ZEngine;
 (function (ZEngine) {
@@ -702,10 +571,10 @@ var ZEngine;
                 }
             };
             LinkedList.prototype.first = function () {
-                return this.start.content;
+                return this.start != null ? this.start.content : null;
             };
             LinkedList.prototype.last = function () {
-                return this.end.content;
+                return this.end != null ? this.end.content : null;
             };
             LinkedList.prototype.firstItem = function () {
                 return this.start;
@@ -725,11 +594,10 @@ var ZEngine;
                 str += "]";
                 return str;
             };
-            LinkedList.idCounter = 0;
             return LinkedList;
         }());
+        LinkedList.idCounter = 0;
         Lib.LinkedList = LinkedList;
-        var LinkedList;
         (function (LinkedList) {
             var InternalItem = (function () {
                 function InternalItem() {
@@ -760,5 +628,147 @@ var ZEngine;
             LinkedList.Iterator = Iterator;
         })(LinkedList = Lib.LinkedList || (Lib.LinkedList = {}));
     })(Lib = ZEngine.Lib || (ZEngine.Lib = {}));
+})(ZEngine || (ZEngine = {}));
+var ZEngine;
+(function (ZEngine) {
+    var Mouse = (function () {
+        function Mouse() {
+        }
+        return Mouse;
+    }());
+    ZEngine.Mouse = Mouse;
+})(ZEngine || (ZEngine = {}));
+var ZEngine;
+(function (ZEngine) {
+    var Renderer = (function () {
+        function Renderer(game) {
+            var _this = this;
+            this.game = game;
+            this.renderer = new THREE.WebGLRenderer();
+            this.renderer.setSize(game.screen.width, game.screen.height);
+            document.getElementsByTagName("body")[0].appendChild(this.renderer.domElement);
+            this.game.screen.onResize.then(function (size) { return _this.onResize(size); });
+        }
+        Renderer.prototype.onResize = function (size) {
+            this.renderer.setSize(size.width, size.height);
+            if (this.game.scene.camera instanceof THREE.PerspectiveCamera) {
+                this.game.scene.camera.aspect = size.width / size.height;
+                this.game.scene.camera.updateProjectionMatrix();
+            }
+        };
+        Renderer.prototype.render = function (scene) {
+            this.renderer.render(scene.scene, scene.camera);
+        };
+        return Renderer;
+    }());
+    ZEngine.Renderer = Renderer;
+})(ZEngine || (ZEngine = {}));
+var ZEngine;
+(function (ZEngine) {
+    var Scene = (function () {
+        function Scene(game) {
+            this.game = game;
+            this.entities = new ZEngine.Lib.LinkedList();
+            this.camera = this.createCamera();
+            this.scene = this.createScene();
+            this.scene.name = "Scene";
+            this.camera.name = "Main camera";
+            this.start();
+        }
+        /**
+         * Called when scene is ready.
+         */
+        Scene.prototype.start = function () {
+        };
+        /**
+         * Builds main camera used for this scene.
+         */
+        Scene.prototype.createCamera = function () {
+            return new THREE.PerspectiveCamera(70, this.game.screen.width / this.game.screen.height, 0.1, 1E5);
+        };
+        /**
+         * Builds main camera used for this scene.
+         */
+        Scene.prototype.createScene = function () {
+            return new THREE.Scene();
+        };
+        /**
+         * Creates new instance of specified entity.
+         */
+        Scene.prototype.create = function (base) {
+            var instance = new base(this);
+            this.entities.push(instance);
+            return instance;
+        };
+        /**
+         * Finally removes entity from scene
+         */
+        Scene.prototype.remove = function (entity) {
+            entity.onRemove();
+            entity.__removed = true;
+            entity.scene = null;
+            this.entities.remove(entity);
+        };
+        /**
+         * Calls tick for every entity.
+         */
+        Scene.prototype.update = function (delta) {
+            var item;
+            this.entities.iter.reset();
+            while (item = this.entities.iter.next()) {
+                item.tick(delta);
+            }
+        };
+        /**
+         * Renders current scene.
+         */
+        Scene.prototype.render = function (delta) {
+            this.game.renderer.render(this);
+        };
+        return Scene;
+    }());
+    ZEngine.Scene = Scene;
+})(ZEngine || (ZEngine = {}));
+var ZEngine;
+(function (ZEngine) {
+    var Screen = (function () {
+        function Screen(game) {
+            var _this = this;
+            this.game = game;
+            this.onResize = new ZEngine.Eventor();
+            var size = this.viewport();
+            this.width = size.width;
+            this.height = size.height;
+            window.addEventListener('resize', function () { return _this.resized(); }, false);
+        }
+        Screen.prototype.resized = function () {
+            var size = this.viewport();
+            this.width = size.width;
+            this.height = size.height;
+            this.onResize.trigger(size);
+        };
+        Screen.prototype.viewport = function () {
+            var e = window, a = 'inner';
+            if (!('innerWidth' in window)) {
+                a = 'client';
+                e = document.documentElement || document.body;
+            }
+            return {
+                width: e[a + 'Width'],
+                height: e[a + 'Height']
+            };
+        };
+        return Screen;
+    }());
+    ZEngine.Screen = Screen;
+})(ZEngine || (ZEngine = {}));
+var ZEngine;
+(function (ZEngine) {
+    var Time = (function () {
+        function Time() {
+        }
+        return Time;
+    }());
+    ZEngine.Time = Time;
 })(ZEngine || (ZEngine = {}));
 //# sourceMappingURL=zengine.js.map

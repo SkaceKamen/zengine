@@ -8,23 +8,9 @@
         "rootDir": "zengine/",
         "declaration": true
     },
-    "files": [
-        "zengine/decorators.ts",
-        "zengine/lib/keys.ts",
-        "zengine/lib/linked.list.ts",
-        "zengine/comps/component.ts",
-        "zengine/comps/input.ts",
-        "zengine/entity.ts",
-        "zengine/entity.3d.ts",
-        "zengine/scene.ts",
-        "zengine/game.ts",
-        "zengine/renderer.ts",
-        "zengine/decorators.ts",
-        "zengine/screen.ts",
-        "zengine/eventor.ts",
-        "zengine/mouse.ts",
-        "zengine/time.ts",
-        "zengine/linked.list.ts",
-        "zengine/index.d.ts"
+    "exclude": [
+        "dist",
+        "node_modules",
+        "typings"
     ]
 }

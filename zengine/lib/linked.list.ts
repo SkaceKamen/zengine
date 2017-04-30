@@ -199,11 +199,11 @@ namespace ZEngine.Lib {
 		}
 		
 		public first() {
-			return this.start.content;
+			return this.start != null ? this.start.content : null;
 		}
 		
 		public last() {
-			return this.end.content;
+			return this.end != null ? this.end.content : null;
 		}
 		
 		public firstItem() {
