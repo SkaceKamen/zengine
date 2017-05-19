@@ -1,7 +1,7 @@
 {
   "name": "zengine",
-  "version": "1.0.0",
-  "description": "Game engine for THREE.JS",
+  "version": "1.0.1",
+  "description": "Typescript game engine for THREE.JS",
   "scripts": {
     "postinstall": "typings install",
     "tsc": "tsc",
