@@ -18,8 +18,8 @@ namespace ZEngine {
 		 * Removes entity from scene.
 		 */
 		public remove() {
-			super.remove()
 			this.scene.scene.remove(this.transform)
+			super.remove()
 		}
 	}
 }
