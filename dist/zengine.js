@@ -160,8 +160,8 @@ var ZEngine;
          * Removes entity from scene.
          */
         Entity3D.prototype.remove = function () {
-            _super.prototype.remove.call(this);
             this.scene.scene.remove(this.transform);
+            _super.prototype.remove.call(this);
         };
         return Entity3D;
     }(ZEngine.Entity));
