@@ -5,10 +5,9 @@ import { Time } from "./time";
 import { Mouse } from "./mouse";
 import { Screen } from "./screen";
 
-export function fixed (n: number) {
-	n = n || 3;
+export function fixed (input: number, n: number = 3) {
 	var ex = Math.pow(10, n);
-	return Math.round(this * ex) / ex;
+	return Math.round(input * ex) / ex;
 }
 
 export class Game {
@@ -21,12 +20,16 @@ export class Game {
 
 	public targetFps = 60;
 
+	public window: Window
+
 	protected interval = 0;
 
-	constructor() {
+	constructor(win?: Window) {
+		this.window = win || window;
+
 		this.time = new Time();
 		this.mouse = new Mouse();
-		this.screen = new Screen(this);
+		this.screen = new Screen(this, this.window);
 		this.renderer = new Renderer(this);
 
 		this.initTicker();
@@ -65,6 +68,7 @@ export class Game {
 
 		var vendors = [ 'ms', 'moz', 'webkit', 'o' ],
 			frame_time = this.time.sleep;
+		var window = this.window;
 
 		for (var x = 0; x < vendors.length && !window.requestAnimationFrame; ++ x) {
 			window.requestAnimationFrame = window[ vendors[ x ] + 'RequestAnimationFrame' ];
@@ -88,7 +92,7 @@ export class Game {
 
 	protected tick(t: number) {
 		// Work out the delta time
-		this.time.delta = this.time.lastframetime ? fixed( (t - this.time.lastframetime)/1000.0) : (this.time.sleep / 100);
+		this.time.delta = this.time.lastframetime ? fixed((t - this.time.lastframetime)/1000.0) : (this.time.sleep / 100);
 
 		// Store the last frame time
 		this.time.lastframetime = t;
@@ -102,7 +106,7 @@ export class Game {
 		this.render(this.time.delta);
 
 		// Schedule the next update
-		this.interval = window.requestAnimationFrame(this.tick.bind(this));
+		this.interval = this.window.requestAnimationFrame(this.tick.bind(this));
 	}
 
 	/**

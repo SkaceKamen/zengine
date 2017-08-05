@@ -1,4 +1,4 @@
-/// <reference path="index.d.ts" />
+/// <reference path="../typings/index.d.ts" />
 
 export { Entity } from './entity';
 export { Entity3D } from './entity.3d';
@@ -9,3 +9,5 @@ export { Component } from './component'
 export { InputComponent } from './components/input'
 export { Renderer } from './renderer'
 export { Keys, MouseButtons } from './lib/keys'
+export { Scene } from './scene'
+export { Debugger } from './debug'

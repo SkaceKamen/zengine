@@ -5,11 +5,11 @@ import { Scene } from "./scene";
 export class Renderer {
 	protected renderer: THREE.WebGLRenderer;
 
-	constructor(public game: Game) {
+	constructor(public game: Game, container?: Element) {
 		this.renderer = new THREE.WebGLRenderer();
 		this.renderer.setSize(game.screen.width, game.screen.height);
 
-		document.getElementsByTagName("body")[0].appendChild(this.renderer.domElement);
+		(container || document.getElementsByTagName("body")[0]).appendChild(this.renderer.domElement);
 
 		this.game.screen.onResize.then((size) => this.onResize(size))
 	}

@@ -12,7 +12,7 @@ export class Screen {
 
 	public onResize = new Eventor<ScreenSize>();
 
-	public constructor(public game: Game) {
+	public constructor(public game: Game, public window: Window) {
 		var size = this.viewport();
 
 		this.width = size.width;
@@ -31,10 +31,10 @@ export class Screen {
 	}
 
 	public viewport() {
-		var e: any = window, a = 'inner';
-		if (!('innerWidth' in window)) {
+		var e: any = this.window, a = 'inner';
+		if (!('innerWidth' in this.window)) {
 			a = 'client';
-			e = document.documentElement || document.body;
+			e = this.window.document.documentElement || this.window.document.body;
 		}
 		return <ScreenSize>{
 			width:  <number>e[a + 'Width'],

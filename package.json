@@ -16,6 +16,7 @@
     "typings": "^1.0.4"
   },
   "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
   "repository": {
     "type": "git",
     "url": "git://github.com/SkaceKamen/zengine.git"
