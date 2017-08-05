@@ -1,45 +1,3 @@
-declare namespace ZEngine.Comps {
-    class Component {
-        entity: Entity;
-        static name: string;
-        constructor(entity: Entity, options?: any);
-        protected start(options?: any): void;
-        tick(delta: number): void;
-    }
-}
-declare namespace ZEngine.Comps {
-    class Input extends Component {
-        static name: string;
-        protected mouseButtons: {
-            [code: number]: boolean;
-        };
-        protected mousePress: {
-            [code: number]: boolean;
-        };
-        protected keys: {
-            [code: number]: boolean;
-        };
-        protected press: {
-            [code: number]: boolean;
-        };
-        mouse: {
-            x: number;
-            y: number;
-        };
-        protected start(): void;
-        protected onMouseMove(event: MouseEvent): void;
-        protected onMouseDown(e: MouseEvent): void;
-        protected onMouseUp(e: MouseEvent): void;
-        protected onKeyDown(e: KeyboardEvent): void;
-        protected onKeyUp(e: KeyboardEvent): void;
-        keyPressed(code: number): boolean;
-        keyDown(code: number): boolean;
-        keyUp(code: number): boolean;
-        mouseDown(code: number): boolean;
-        mousePressed(code: number): boolean;
-        tick(delta: number): void;
-    }
-}
 declare namespace ZEngine {
 }
 declare namespace ZEngine {
@@ -77,11 +35,19 @@ declare namespace ZEngine {
         transform: THREE.Object3D;
         position: THREE.Vector3;
         rotation: THREE.Quaternion;
+        parent: Entity3D;
         protected prestart(): void;
         /**
          * Removes entity from scene.
          */
         remove(): void;
+        /**
+         * Adds entity as child to this entity
+         * @param base
+         */
+        create<T extends Entity3D>(base: {
+            new (...args: any[]): T;
+        }): T;
     }
 }
 declare namespace ZEngine {
@@ -139,17 +105,135 @@ declare namespace ZEngine {
     }
 }
 declare namespace ZEngine {
+    class Mouse {
+        x: number;
+        y: number;
+        elementX: number;
+        elementY: number;
+    }
+}
+declare namespace ZEngine {
+    class Renderer {
+        game: Game;
+        protected renderer: THREE.WebGLRenderer;
+        constructor(game: Game);
+        protected onResize(size: ScreenSize): void;
+        render(scene: Scene): void;
+    }
+}
+declare namespace ZEngine {
+    class Scene {
+        game: Game;
+        entities: Lib.LinkedList<Entity>;
+        scene: THREE.Scene;
+        camera: THREE.Camera;
+        constructor(game: Game);
+        /**
+         * Called when scene is ready.
+         */
+        protected start(): void;
+        /**
+         * Builds main camera used for this scene.
+         */
+        protected createCamera(): THREE.Camera;
+        /**
+         * Builds main camera used for this scene.
+         */
+        protected createScene(): THREE.Scene;
+        /**
+         * Creates new instance of specified entity.
+         */
+        create<T extends Entity>(base: {
+            new (...args: any[]): T;
+        }): T;
+        /**
+         * Finally removes entity from scene
+         */
+        remove(entity: Entity): void;
+        /**
+         * Calls tick for every entity.
+         */
+        update(delta: number): void;
+        /**
+         * Renders current scene.
+         */
+        render(delta: number): void;
+    }
+}
+declare namespace ZEngine {
+    interface ScreenSize {
+        width: number;
+        height: number;
+    }
+    class Screen {
+        game: Game;
+        width: number;
+        height: number;
+        onResize: Eventor<ScreenSize>;
+        constructor(game: Game);
+        protected resized(): void;
+        viewport(): ScreenSize;
+    }
+}
+declare namespace ZEngine {
+    class Time {
+        delta: number;
+        sleep: number;
+        lastframetime: number;
+    }
+}
+declare namespace ZEngine.Comps {
+    class Component {
+        entity: Entity;
+        static name: string;
+        constructor(entity: Entity, options?: any);
+        protected start(options?: any): void;
+        tick(delta: number): void;
+    }
+}
+declare namespace ZEngine.Comps {
+    class Input extends Component {
+        static name: string;
+        protected mouseButtons: {
+            [code: number]: boolean;
+        };
+        protected mousePress: {
+            [code: number]: boolean;
+        };
+        protected keys: {
+            [code: number]: boolean;
+        };
+        protected press: {
+            [code: number]: boolean;
+        };
+        locked: boolean;
+        protected lockRequested: boolean;
+        mouse: {
+            x: number;
+            y: number;
+            movementX: number;
+            movementY: number;
+        };
+        protected start(): void;
+        protected onClick(event: MouseEvent): void;
+        protected onMouseMove(event: MouseEvent): void;
+        protected onMouseDown(e: MouseEvent): void;
+        protected onMouseUp(e: MouseEvent): void;
+        protected onKeyDown(e: KeyboardEvent): void;
+        protected onKeyUp(e: KeyboardEvent): void;
+        keyPressed(code: number): boolean;
+        keyDown(code: number): boolean;
+        keyUp(code: number): boolean;
+        mouseDown(code: number): boolean;
+        mousePressed(code: number): boolean;
+        tick(delta: number): void;
+        lockPointer(): void;
+        protected actuallyLockPointer(): void;
+        private onPointerLockChange(event);
+    }
+}
+declare namespace ZEngine {
     let Keys: {
-        0: number;
-        1: number;
-        2: number;
-        3: number;
-        4: number;
-        5: number;
-        6: number;
-        7: number;
-        8: number;
-        9: number;
         Backspace: number;
         Tab: number;
         Enter: number;
@@ -170,6 +254,16 @@ declare namespace ZEngine {
         Down: number;
         Insert: number;
         Delete: number;
+        0: number;
+        1: number;
+        2: number;
+        3: number;
+        4: number;
+        5: number;
+        6: number;
+        7: number;
+        8: number;
+        9: number;
         A: number;
         B: number;
         C: number;
@@ -327,83 +421,5 @@ declare namespace ZEngine.Lib {
             peek(): T;
             next(): T;
         }
-    }
-}
-declare namespace ZEngine {
-    class Mouse {
-        x: number;
-        y: number;
-        elementX: number;
-        elementY: number;
-    }
-}
-declare namespace ZEngine {
-    class Renderer {
-        game: Game;
-        protected renderer: THREE.WebGLRenderer;
-        constructor(game: Game);
-        protected onResize(size: ScreenSize): void;
-        render(scene: Scene): void;
-    }
-}
-declare namespace ZEngine {
-    class Scene {
-        game: Game;
-        entities: Lib.LinkedList<Entity>;
-        scene: THREE.Scene;
-        camera: THREE.Camera;
-        constructor(game: Game);
-        /**
-         * Called when scene is ready.
-         */
-        protected start(): void;
-        /**
-         * Builds main camera used for this scene.
-         */
-        protected createCamera(): THREE.Camera;
-        /**
-         * Builds main camera used for this scene.
-         */
-        protected createScene(): THREE.Scene;
-        /**
-         * Creates new instance of specified entity.
-         */
-        create<T extends Entity>(base: {
-            new (...args: any[]): T;
-        }): T;
-        /**
-         * Finally removes entity from scene
-         */
-        remove(entity: Entity): void;
-        /**
-         * Calls tick for every entity.
-         */
-        update(delta: number): void;
-        /**
-         * Renders current scene.
-         */
-        render(delta: number): void;
-    }
-}
-declare namespace ZEngine {
-    interface ScreenSize {
-        width: number;
-        height: number;
-    }
-    class Screen {
-        game: Game;
-        width: number;
-        height: number;
-        onResize: Eventor<ScreenSize>;
-        constructor(game: Game);
-        protected resized(): void;
-        viewport(): ScreenSize;
-    }
-}
-declare namespace ZEngine {
-    class Time {
-        delta: number;
-        sleep: number;
-        lastframetime: number;
     }
 }

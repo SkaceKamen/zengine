@@ -1,106 +1,13 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var ZEngine;
-(function (ZEngine) {
-    var Comps;
-    (function (Comps) {
-        var Component = (function () {
-            function Component(entity, options) {
-                this.entity = entity;
-                this.start(options);
-            }
-            Component.prototype.start = function (options) {
-            };
-            Component.prototype.tick = function (delta) {
-            };
-            return Component;
-        }());
-        Component.name = "component";
-        Comps.Component = Component;
-    })(Comps = ZEngine.Comps || (ZEngine.Comps = {}));
-})(ZEngine || (ZEngine = {}));
-var ZEngine;
-(function (ZEngine) {
-    var Comps;
-    (function (Comps) {
-        var Input = (function (_super) {
-            __extends(Input, _super);
-            function Input() {
-                var _this = _super !== null && _super.apply(this, arguments) || this;
-                _this.mouseButtons = {};
-                _this.mousePress = {};
-                _this.keys = {};
-                _this.press = {};
-                _this.mouse = {
-                    x: 0,
-                    y: 0
-                };
-                return _this;
-            }
-            Input.prototype.start = function () {
-                var _this = this;
-                window.addEventListener('keydown', function (e) { return _this.onKeyDown(e); });
-                window.addEventListener('keyup', function (e) { return _this.onKeyUp(e); });
-                window.addEventListener('mousedown', function (e) { return _this.onMouseDown(e); });
-                window.addEventListener('mousemove', function (e) { return _this.onMouseMove(e); });
-                window.addEventListener('mouseup', function (e) { return _this.onMouseUp(e); });
-                window.addEventListener('contextmenu', function (e) { e.stopPropagation(); e.preventDefault(); });
-            };
-            Input.prototype.onMouseMove = function (event) {
-                var mouseX, mouseY;
-                if (event.clientX) {
-                    mouseX = event.clientX;
-                    mouseY = event.clientY;
-                }
-                else if (event.layerX) {
-                    mouseX = event.layerX;
-                    mouseY = event.layerY;
-                }
-                this.mouse.x = mouseX;
-                this.mouse.y = mouseY;
-            };
-            Input.prototype.onMouseDown = function (e) {
-                this.mouseButtons[e.button] = true;
-                this.mousePress[e.button] = true;
-            };
-            Input.prototype.onMouseUp = function (e) {
-                this.mouseButtons[e.button] = false;
-            };
-            Input.prototype.onKeyDown = function (e) {
-                this.keys[e.keyCode] = true;
-                this.press[e.keyCode] = true;
-            };
-            Input.prototype.onKeyUp = function (e) {
-                this.keys[e.keyCode] = false;
-            };
-            Input.prototype.keyPressed = function (code) {
-                return !!this.press[code];
-            };
-            Input.prototype.keyDown = function (code) {
-                return !!this.keys[code];
-            };
-            Input.prototype.keyUp = function (code) {
-                return !!!this.keys[code];
-            };
-            Input.prototype.mouseDown = function (code) {
-                return !!this.mouseButtons[code];
-            };
-            Input.prototype.mousePressed = function (code) {
-                return !!this.mousePress[code];
-            };
-            Input.prototype.tick = function (delta) {
-                this.press = {};
-                this.mousePress = {};
-            };
-            return Input;
-        }(Comps.Component));
-        Input.name = "input";
-        Comps.Input = Input;
-    })(Comps = ZEngine.Comps || (ZEngine.Comps = {}));
-})(ZEngine || (ZEngine = {}));
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var ZEngine;
 (function (ZEngine) {
     var Entity = (function () {
@@ -160,8 +67,27 @@ var ZEngine;
          * Removes entity from scene.
          */
         Entity3D.prototype.remove = function () {
-            this.scene.scene.remove(this.transform);
+            if (this.parent === null) {
+                this.scene.scene.remove(this.transform);
+            }
+            else {
+                this.parent.transform.remove(this.transform);
+            }
             _super.prototype.remove.call(this);
+        };
+        /**
+         * Adds entity as child to this entity
+         * @param base
+         */
+        Entity3D.prototype.create = function (base) {
+            var instance = this.scene.create(base);
+            // Needed when removing child
+            instance.parent = this;
+            // Remove from normal scene
+            this.scene.scene.remove(instance.transform);
+            // Add it to this entity
+            this.transform.add(instance.transform);
+            return instance;
         };
         return Entity3D;
     }(ZEngine.Entity));
@@ -298,6 +224,285 @@ var ZEngine;
         return Game;
     }());
     ZEngine.Game = Game;
+})(ZEngine || (ZEngine = {}));
+var ZEngine;
+(function (ZEngine) {
+    var Mouse = (function () {
+        function Mouse() {
+        }
+        return Mouse;
+    }());
+    ZEngine.Mouse = Mouse;
+})(ZEngine || (ZEngine = {}));
+var ZEngine;
+(function (ZEngine) {
+    var Renderer = (function () {
+        function Renderer(game) {
+            var _this = this;
+            this.game = game;
+            this.renderer = new THREE.WebGLRenderer();
+            this.renderer.setSize(game.screen.width, game.screen.height);
+            document.getElementsByTagName("body")[0].appendChild(this.renderer.domElement);
+            this.game.screen.onResize.then(function (size) { return _this.onResize(size); });
+        }
+        Renderer.prototype.onResize = function (size) {
+            this.renderer.setSize(size.width, size.height);
+            if (this.game.scene.camera instanceof THREE.PerspectiveCamera) {
+                this.game.scene.camera.aspect = size.width / size.height;
+                this.game.scene.camera.updateProjectionMatrix();
+            }
+        };
+        Renderer.prototype.render = function (scene) {
+            this.renderer.render(scene.scene, scene.camera);
+        };
+        return Renderer;
+    }());
+    ZEngine.Renderer = Renderer;
+})(ZEngine || (ZEngine = {}));
+var ZEngine;
+(function (ZEngine) {
+    var Scene = (function () {
+        function Scene(game) {
+            this.game = game;
+            this.entities = new ZEngine.Lib.LinkedList();
+            this.camera = this.createCamera();
+            this.scene = this.createScene();
+            this.scene.name = "Scene";
+            this.camera.name = "Main camera";
+            this.start();
+        }
+        /**
+         * Called when scene is ready.
+         */
+        Scene.prototype.start = function () {
+        };
+        /**
+         * Builds main camera used for this scene.
+         */
+        Scene.prototype.createCamera = function () {
+            return new THREE.PerspectiveCamera(70, this.game.screen.width / this.game.screen.height, 0.1, 1E5);
+        };
+        /**
+         * Builds main camera used for this scene.
+         */
+        Scene.prototype.createScene = function () {
+            return new THREE.Scene();
+        };
+        /**
+         * Creates new instance of specified entity.
+         */
+        Scene.prototype.create = function (base) {
+            var instance = new base(this);
+            this.entities.push(instance);
+            return instance;
+        };
+        /**
+         * Finally removes entity from scene
+         */
+        Scene.prototype.remove = function (entity) {
+            entity.onRemove();
+            entity.__removed = true;
+            entity.scene = null;
+            this.entities.remove(entity);
+        };
+        /**
+         * Calls tick for every entity.
+         */
+        Scene.prototype.update = function (delta) {
+            var item;
+            this.entities.iter.reset();
+            while (item = this.entities.iter.next()) {
+                item.tick(delta);
+            }
+        };
+        /**
+         * Renders current scene.
+         */
+        Scene.prototype.render = function (delta) {
+            this.game.renderer.render(this);
+        };
+        return Scene;
+    }());
+    ZEngine.Scene = Scene;
+})(ZEngine || (ZEngine = {}));
+var ZEngine;
+(function (ZEngine) {
+    var Screen = (function () {
+        function Screen(game) {
+            var _this = this;
+            this.game = game;
+            this.onResize = new ZEngine.Eventor();
+            var size = this.viewport();
+            this.width = size.width;
+            this.height = size.height;
+            window.addEventListener('resize', function () { return _this.resized(); }, false);
+        }
+        Screen.prototype.resized = function () {
+            var size = this.viewport();
+            this.width = size.width;
+            this.height = size.height;
+            this.onResize.trigger(size);
+        };
+        Screen.prototype.viewport = function () {
+            var e = window, a = 'inner';
+            if (!('innerWidth' in window)) {
+                a = 'client';
+                e = document.documentElement || document.body;
+            }
+            return {
+                width: e[a + 'Width'],
+                height: e[a + 'Height']
+            };
+        };
+        return Screen;
+    }());
+    ZEngine.Screen = Screen;
+})(ZEngine || (ZEngine = {}));
+var ZEngine;
+(function (ZEngine) {
+    var Time = (function () {
+        function Time() {
+        }
+        return Time;
+    }());
+    ZEngine.Time = Time;
+})(ZEngine || (ZEngine = {}));
+var ZEngine;
+(function (ZEngine) {
+    var Comps;
+    (function (Comps) {
+        var Component = (function () {
+            function Component(entity, options) {
+                this.entity = entity;
+                this.start(options);
+            }
+            Component.prototype.start = function (options) {
+            };
+            Component.prototype.tick = function (delta) {
+            };
+            Component.name = "component";
+            return Component;
+        }());
+        Comps.Component = Component;
+    })(Comps = ZEngine.Comps || (ZEngine.Comps = {}));
+})(ZEngine || (ZEngine = {}));
+var ZEngine;
+(function (ZEngine) {
+    var Comps;
+    (function (Comps) {
+        var Input = (function (_super) {
+            __extends(Input, _super);
+            function Input() {
+                var _this = _super !== null && _super.apply(this, arguments) || this;
+                _this.mouseButtons = {};
+                _this.mousePress = {};
+                _this.keys = {};
+                _this.press = {};
+                _this.locked = false;
+                _this.lockRequested = false;
+                _this.mouse = {
+                    x: 0,
+                    y: 0,
+                    movementX: 0,
+                    movementY: 0
+                };
+                return _this;
+            }
+            Input.prototype.start = function () {
+                var _this = this;
+                window.addEventListener('keydown', function (e) { return _this.onKeyDown(e); });
+                window.addEventListener('keyup', function (e) { return _this.onKeyUp(e); });
+                window.addEventListener('click', function (e) { return _this.onClick(e); });
+                window.addEventListener('mousedown', function (e) { return _this.onMouseDown(e); });
+                window.addEventListener('mousemove', function (e) { return _this.onMouseMove(e); });
+                window.addEventListener('mouseup', function (e) { return _this.onMouseUp(e); });
+                window.addEventListener('contextmenu', function (e) { e.stopPropagation(); e.preventDefault(); });
+                var handlers = ['pointerlockchange', 'mozpointerlockchange', 'webkitpointerlockchange'];
+                var errorHandlers = ['pointerlockerror', 'mozpointerlockerror', 'webkitpointerlockerror'];
+                for (var i in handlers) {
+                    document.addEventListener(handlers[i], function (event) {
+                        _this.locked = _this.onPointerLockChange(event);
+                    }, false);
+                }
+                for (var i in errorHandlers) {
+                    document.addEventListener(errorHandlers[i], function (event) {
+                        _this.locked = false;
+                    }, false);
+                }
+            };
+            Input.prototype.onClick = function (event) {
+                if (this.lockRequested) {
+                    this.lockRequested = false;
+                    this.actuallyLockPointer();
+                }
+            };
+            Input.prototype.onMouseMove = function (event) {
+                var mouseX, mouseY;
+                if (event.clientX) {
+                    mouseX = event.clientX;
+                    mouseY = event.clientY;
+                }
+                else if (event.layerX) {
+                    mouseX = event.layerX;
+                    mouseY = event.layerY;
+                }
+                this.mouse.x = mouseX;
+                this.mouse.y = mouseY;
+                this.mouse.movementX += event.movementX || event.mozMovementX || event.webkitMovementX || 0;
+                this.mouse.movementY += event.movementY || event.mozMovementY || event.webkitMovementY || 0;
+            };
+            Input.prototype.onMouseDown = function (e) {
+                this.mouseButtons[e.button] = true;
+                this.mousePress[e.button] = true;
+            };
+            Input.prototype.onMouseUp = function (e) {
+                this.mouseButtons[e.button] = false;
+            };
+            Input.prototype.onKeyDown = function (e) {
+                this.keys[e.keyCode] = true;
+                this.press[e.keyCode] = true;
+            };
+            Input.prototype.onKeyUp = function (e) {
+                this.keys[e.keyCode] = false;
+            };
+            Input.prototype.keyPressed = function (code) {
+                return !!this.press[code];
+            };
+            Input.prototype.keyDown = function (code) {
+                return !!this.keys[code];
+            };
+            Input.prototype.keyUp = function (code) {
+                return !!!this.keys[code];
+            };
+            Input.prototype.mouseDown = function (code) {
+                return !!this.mouseButtons[code];
+            };
+            Input.prototype.mousePressed = function (code) {
+                return !!this.mousePress[code];
+            };
+            Input.prototype.tick = function (delta) {
+                this.press = {};
+                this.mousePress = {};
+                this.mouse.movementX = 0;
+                this.mouse.movementY = 0;
+            };
+            Input.prototype.lockPointer = function () {
+                this.lockRequested = true;
+            };
+            Input.prototype.actuallyLockPointer = function () {
+                document.body.requestPointerLock = document.body.requestPointerLock || document.body.mozRequestPointerLock || document.body.webkitRequestPointerLock;
+                document.body.requestPointerLock();
+            };
+            Input.prototype.onPointerLockChange = function (event) {
+                return (document.pointerLockElement === document.body ||
+                    document.mozPointerLockElement === document.body ||
+                    document.webkitPointerLockElement === document.body);
+            };
+            Input.name = "input";
+            return Input;
+        }(Comps.Component));
+        Comps.Input = Input;
+    })(Comps = ZEngine.Comps || (ZEngine.Comps = {}));
 })(ZEngine || (ZEngine = {}));
 var ZEngine;
 (function (ZEngine) {
@@ -594,9 +799,9 @@ var ZEngine;
                 str += "]";
                 return str;
             };
+            LinkedList.idCounter = 0;
             return LinkedList;
         }());
-        LinkedList.idCounter = 0;
         Lib.LinkedList = LinkedList;
         (function (LinkedList) {
             var InternalItem = (function () {
@@ -628,147 +833,5 @@ var ZEngine;
             LinkedList.Iterator = Iterator;
         })(LinkedList = Lib.LinkedList || (Lib.LinkedList = {}));
     })(Lib = ZEngine.Lib || (ZEngine.Lib = {}));
-})(ZEngine || (ZEngine = {}));
-var ZEngine;
-(function (ZEngine) {
-    var Mouse = (function () {
-        function Mouse() {
-        }
-        return Mouse;
-    }());
-    ZEngine.Mouse = Mouse;
-})(ZEngine || (ZEngine = {}));
-var ZEngine;
-(function (ZEngine) {
-    var Renderer = (function () {
-        function Renderer(game) {
-            var _this = this;
-            this.game = game;
-            this.renderer = new THREE.WebGLRenderer();
-            this.renderer.setSize(game.screen.width, game.screen.height);
-            document.getElementsByTagName("body")[0].appendChild(this.renderer.domElement);
-            this.game.screen.onResize.then(function (size) { return _this.onResize(size); });
-        }
-        Renderer.prototype.onResize = function (size) {
-            this.renderer.setSize(size.width, size.height);
-            if (this.game.scene.camera instanceof THREE.PerspectiveCamera) {
-                this.game.scene.camera.aspect = size.width / size.height;
-                this.game.scene.camera.updateProjectionMatrix();
-            }
-        };
-        Renderer.prototype.render = function (scene) {
-            this.renderer.render(scene.scene, scene.camera);
-        };
-        return Renderer;
-    }());
-    ZEngine.Renderer = Renderer;
-})(ZEngine || (ZEngine = {}));
-var ZEngine;
-(function (ZEngine) {
-    var Scene = (function () {
-        function Scene(game) {
-            this.game = game;
-            this.entities = new ZEngine.Lib.LinkedList();
-            this.camera = this.createCamera();
-            this.scene = this.createScene();
-            this.scene.name = "Scene";
-            this.camera.name = "Main camera";
-            this.start();
-        }
-        /**
-         * Called when scene is ready.
-         */
-        Scene.prototype.start = function () {
-        };
-        /**
-         * Builds main camera used for this scene.
-         */
-        Scene.prototype.createCamera = function () {
-            return new THREE.PerspectiveCamera(70, this.game.screen.width / this.game.screen.height, 0.1, 1E5);
-        };
-        /**
-         * Builds main camera used for this scene.
-         */
-        Scene.prototype.createScene = function () {
-            return new THREE.Scene();
-        };
-        /**
-         * Creates new instance of specified entity.
-         */
-        Scene.prototype.create = function (base) {
-            var instance = new base(this);
-            this.entities.push(instance);
-            return instance;
-        };
-        /**
-         * Finally removes entity from scene
-         */
-        Scene.prototype.remove = function (entity) {
-            entity.onRemove();
-            entity.__removed = true;
-            entity.scene = null;
-            this.entities.remove(entity);
-        };
-        /**
-         * Calls tick for every entity.
-         */
-        Scene.prototype.update = function (delta) {
-            var item;
-            this.entities.iter.reset();
-            while (item = this.entities.iter.next()) {
-                item.tick(delta);
-            }
-        };
-        /**
-         * Renders current scene.
-         */
-        Scene.prototype.render = function (delta) {
-            this.game.renderer.render(this);
-        };
-        return Scene;
-    }());
-    ZEngine.Scene = Scene;
-})(ZEngine || (ZEngine = {}));
-var ZEngine;
-(function (ZEngine) {
-    var Screen = (function () {
-        function Screen(game) {
-            var _this = this;
-            this.game = game;
-            this.onResize = new ZEngine.Eventor();
-            var size = this.viewport();
-            this.width = size.width;
-            this.height = size.height;
-            window.addEventListener('resize', function () { return _this.resized(); }, false);
-        }
-        Screen.prototype.resized = function () {
-            var size = this.viewport();
-            this.width = size.width;
-            this.height = size.height;
-            this.onResize.trigger(size);
-        };
-        Screen.prototype.viewport = function () {
-            var e = window, a = 'inner';
-            if (!('innerWidth' in window)) {
-                a = 'client';
-                e = document.documentElement || document.body;
-            }
-            return {
-                width: e[a + 'Width'],
-                height: e[a + 'Height']
-            };
-        };
-        return Screen;
-    }());
-    ZEngine.Screen = Screen;
-})(ZEngine || (ZEngine = {}));
-var ZEngine;
-(function (ZEngine) {
-    var Time = (function () {
-        function Time() {
-        }
-        return Time;
-    }());
-    ZEngine.Time = Time;
 })(ZEngine || (ZEngine = {}));
 //# sourceMappingURL=zengine.js.map
