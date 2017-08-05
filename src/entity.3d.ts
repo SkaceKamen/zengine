@@ -5,7 +5,7 @@ export class Entity3D extends Entity {
 	public position: THREE.Vector3;
 	public rotation: THREE.Quaternion;
 
-	public parent: Entity3D;
+	public parent: Entity3D = null;
 
 	protected prestart() {
 		this.transform = new THREE.Object3D();
