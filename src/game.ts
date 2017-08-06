@@ -4,10 +4,16 @@ import { Entity } from "./entity";
 import { Time } from "./time";
 import { Mouse } from "./mouse";
 import { Screen } from "./screen";
+import { Eventor } from "./eventor";
 
 export function fixed (input: number, n: number = 3) {
 	var ex = Math.pow(10, n);
 	return Math.round(input * ex) / ex;
+}
+
+export interface SceneChangedData {
+	previous: Scene
+	current: Scene
 }
 
 export class Game {
@@ -23,9 +29,14 @@ export class Game {
 	public window: Window
 
 	protected interval = 0;
+	protected stopped = false;
+
+	public onSceneChanged: Eventor<SceneChangedData>
 
 	constructor(win?: Window) {
 		this.window = win || window;
+
+		this.onSceneChanged = new Eventor();
 
 		this.time = new Time();
 		this.mouse = new Mouse();
@@ -43,8 +54,15 @@ export class Game {
 		this.tick(0);
 	}
 
+	public stop() {
+		this.stopped = true;
+	}
+
 	public loadScene<T extends Scene>(scene: { new(...args: any[]): T }) {
+		let previous = this.scene
 		this.scene = new scene(this);
+
+		this.onSceneChanged.trigger({ previous, current: this.scene })
 
 		// For debuggers
 		window['scene'] = this.scene.scene;
@@ -91,6 +109,11 @@ export class Game {
 	}
 
 	protected tick(t: number) {
+		if (this.stopped) {
+			delete(this.scene)
+			return;
+		}
+
 		// Work out the delta time
 		this.time.delta = this.time.lastframetime ? fixed((t - this.time.lastframetime)/1000.0) : (this.time.sleep / 100);
 

@@ -1,4 +1,5 @@
 import { Entity } from "./entity";
+import { LinkedList } from "./index";
 
 export class Entity3D extends Entity {
 	public transform: THREE.Object3D;
@@ -6,6 +7,7 @@ export class Entity3D extends Entity {
 	public rotation: THREE.Quaternion;
 
 	public parent: Entity3D = null;
+	public children: LinkedList<Entity3D>;
 
 	protected prestart() {
 		this.transform = new THREE.Object3D();
@@ -13,6 +15,7 @@ export class Entity3D extends Entity {
 		this.position = this.transform.position;
 		this.rotation = this.transform.quaternion;
 		this.scene.scene.add(this.transform);
+		this.children = new LinkedList();
 	}
 
 	/**
@@ -22,6 +25,7 @@ export class Entity3D extends Entity {
 		if (this.parent === null) {
 			this.scene.scene.remove(this.transform)
 		} else {
+			this.parent.children.remove(this)
 			this.parent.transform.remove(this.transform)
 		}
 		super.remove()
@@ -33,6 +37,8 @@ export class Entity3D extends Entity {
 	 */
 	public create<T extends Entity3D>(base: { new(...args: any[]): T }) {
 		var instance = this.scene.create(base)
+
+		this.children.push(instance)
 
 		// Needed when removing child
 		instance.parent = this

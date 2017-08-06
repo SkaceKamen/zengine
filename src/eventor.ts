@@ -21,7 +21,7 @@ export class Eventor<T> {
 		}
 	}
 
-	then(callback) {
+	then(callback: (value?: T) => void) {
 		return this.on(callback);
 	}
 
