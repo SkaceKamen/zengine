@@ -8,7 +8,7 @@ export class Scene {
 	public scene: THREE.Scene;
 	public camera: THREE.Camera;
 
-	public constructor(public game: Game) {
+	public constructor(public game: Game, protected startArg?: any) {
 		this.camera = this.createCamera();
 		this.scene = this.createScene();
 

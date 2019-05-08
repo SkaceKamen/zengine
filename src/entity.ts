@@ -19,14 +19,14 @@ export class Entity implements IItem {
 		return new cmp(this, options);
 	}
 
-	protected prestart() {
+	public prestart() {
 
 	}
 
 	/**
 	 * Called when entity is inicialized.
 	 */
-	protected start() {
+	public start() {
 
 	}
 

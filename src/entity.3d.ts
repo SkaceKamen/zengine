@@ -9,7 +9,7 @@ export class Entity3D extends Entity {
 	public parent: Entity3D = null;
 	public children: LinkedList<Entity3D>;
 
-	protected prestart() {
+	public prestart() {
 		this.transform = new THREE.Object3D();
 		this.transform.name = "Entity";
 		this.position = this.transform.position;

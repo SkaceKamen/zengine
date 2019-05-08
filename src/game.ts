@@ -58,9 +58,9 @@ export class Game {
 		this.stopped = true;
 	}
 
-	public loadScene<T extends Scene>(scene: { new(...args: any[]): T }) {
+	public loadScene<T extends Scene>(scene: { new(...args: any[]): T }, arg?: any) {
 		let previous = this.scene
-		this.scene = new scene(this);
+		this.scene = new scene(this, arg);
 
 		this.onSceneChanged.trigger({ previous, current: this.scene })
 
